@@ -1,39 +1,34 @@
-// Import required packages
-const express = require('express');
-const mongoose = require('mongoose');
-const bodyParser = require('body-parser');
-const dotenv = require('dotenv');
-const authRoutes = require('./routes/authRoutes');
-const protectedRoutes = require('./routes/protectedRoutes');
-
-
-dotenv.config();
-
-// Create an Express app
+const express = require("express");
+const mongoose = require("mongoose");
+const cors = require("cors");
+const cookieParser = require("cookie-parser");
 const app = express();
-const port = process.env.PORT || 3000;
+require("dotenv").config();
+const authRoute = require("./Routes/AuthRoutes")
+const { MONGODB_URL, PORT } = process.env;
 
-// Connect to MongoDB Atlas
-mongoose.connect(process.env.MONGODB_URI, {
-  useNewUrlParser: true,
-  useUnifiedTopology: true,
-})
-  .then(() => {
-    console.log('Connected to MongoDB Atlas');
+mongoose
+  .connect(MONGODB_URL, {
+    useNewUrlParser: true,
+    useUnifiedTopology: true,
   })
-  .catch((error) => {
-    console.error('Error connecting to MongoDB Atlas:', error);
-  });
+  .then(() => console.log("MongoDB is  connected successfully"))
+  .catch((err) => console.error(err));
 
-// Define your routes and middleware here
-// Middleware
-app.use(bodyParser.json());
-
-// Routes
-app.use('/auth', authRoutes);
-app.use('/protected', protectedRoutes);
-
-// Start the server
-app.listen(port, () => {
-  console.log(`Server is running on port ${port}`);
+app.listen(PORT, () => {
+  console.log(`Server is listening on port ${PORT}`);
 });
+
+app.use(
+  cors({
+    origin: ["http://localhost:3000"],
+    methods: ["GET", "POST", "PUT", "DELETE"],
+    credentials: true,
+  })
+);
+
+app.use(cookieParser());
+
+app.use(express.json());
+
+app.use("/", authRoute);
